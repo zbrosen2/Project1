@@ -24,6 +24,13 @@ long <- EDU01a |>
 head(long, 5)
 
 # Step 3
+long_updated <- long |> 
+  mutate(short_year = as.numeric(substr(school_year, 8, 9)), 
+         year = ifelse(short_year > 25, 1900 + short_year, 2000 + short_year),
+         measurement = substr(school_year, 1, 7)) |>
+  select(-short_year)
+
+head(long_updated, 5)
 
 # Step 4
 
