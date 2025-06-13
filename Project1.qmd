@@ -4,23 +4,23 @@ format: pdf
 editor: visual
 ---
 
-## Quarto
-
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
-
-## Running Code
-
-When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+## Function 1: select and convert data
 
 ```{r}
-1 + 1
+#| message: false
+#| warning: false
+library(tidyverse)
+
+# Step 1
+EDU01a <- read_csv("data/EDU01a.csv") |>
+  select(Area_name, STCOU, ends_with("D")) |>
+  rename("area_name" = "Area_name")
+
+head(EDU01a, 5)
+
+# Step 2
+long <- EDU01a |>
+  pivot_longer(cols = 3:12, names_to = "school_year", values_to = "enrollment")
+
+head(long, 5)
 ```
-
-You can add options to executable code like this
-
-```{r}
-#| echo: false
-2 * 2
-```
-
-The `echo: false` option disables the printing of code (only output is displayed).
