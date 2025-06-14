@@ -1,11 +1,10 @@
 ---
-title: "Project1"
+title: "ST 558: Project 1"
 format: pdf
 editor: visual
 ---
 
-## Function 1: select and convert data
-
+## Individual Steps
 ```{r}
 #| message: false
 #| warning: false
@@ -23,4 +22,61 @@ long <- EDU01a |>
   pivot_longer(cols = 3:12, names_to = "school_year", values_to = "enrollment")
 
 head(long, 5)
+
+# Step 3
+## add year and measurement variables
+long_updated <- long |> 
+  mutate(short_year = as.numeric(substr(school_year, 8, 9)), 
+         year = ifelse(short_year > 25, 1900 + short_year, 2000 + short_year),
+         measurement = substr(school_year, 1, 7)) |>
+  select(-short_year)
+## print out the first 5 rows
+head(long_updated, 5)
+
+# Step 4
+## get the county indices
+county_indices <- grep(pattern = ", \\w\\w", long_updated$area_name)
+## create the non-county data
+state_tibble <- long_updated[-county_indices,]
+## create the county data
+county_tibble <- long_updated[county_indices,]
+## add a class to the county tibble
+class(county_tibble) <- c("county", class(county_tibble))
+## print out the first 10 rows
+head(state_tibble, 10)
+head(county_tibble, 10)
+
+# Step 5
+
+# Step 6
 ```
+
+## Function 1: Read and Convert Data
+
+## Function 2: Parsing the Data and Creating New Varaiables
+
+## Function 3: County Level
+
+## Function 4: Non-County Level
+
+## Function 5: Returning Two Final Tibbles
+
+## Wrapper Function
+
+## Combine Function
+
+## Custom Plot Function
+
+## Putting it All Together
+
+### Data Processing Function
+
+### Data Combining Function
+
+### Plot Function on State
+
+### Plot Function on County
+
+### Repeating the Process For Additional Data Sets
+
+### Plot Function
