@@ -19,16 +19,16 @@ head(EDU01a, 5)
 
 # Step 2
 long <- EDU01a |>
-  pivot_longer(cols = 3:12, names_to = "school_year", values_to = "enrollment")
+  pivot_longer(cols = 3:12, names_to = "survey_value", values_to = "enrollment")
 
 head(long, 5)
 
 # Step 3
 ## add year and measurement variables
 long_updated <- long |> 
-  mutate(short_year = as.numeric(substr(school_year, 8, 9)), 
+  mutate(short_year = as.numeric(substr(survey_value, 8, 9)), 
          year = ifelse(short_year > 25, 1900 + short_year, 2000 + short_year),
-         measurement = substr(school_year, 1, 7)) |>
+         measurement = substr(survey_value, 1, 7)) |>
   select(-short_year)
 ## print out the first 5 rows
 head(long_updated, 5)
@@ -47,6 +47,9 @@ head(state_tibble, 10)
 head(county_tibble, 10)
 
 # Step 5
+## add state column
+county_tibble<- county_tibble |>
+  mutate(state = substr(area_name, nchar(area_name) - 1, nchar(area_name)))
 
 # Step 6
 division_map <- c("CONNECTICUT" = "New England",
