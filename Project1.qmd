@@ -71,7 +71,7 @@ division_map <- c("CONNECTICUT" = "New England",
                   "NORTH DAKOTA" = "West North Central",
                   "SOUTH DAKOTA" = "West North Central",
                   "DELAWARE" = "South Atlantic",
-                  "District of Columbia" = "South Atlantic",
+                  "DISTRICT OF COLUMBIA" = "South Atlantic",
                   "FLORIDA" = "South Atlantic",
                   "GEORGIA" = "South Atlantic",
                   "MARYLAND" = "South Atlantic",
@@ -100,6 +100,11 @@ division_map <- c("CONNECTICUT" = "New England",
                   "HAWAII" = "Pacific",
                   "OREGON" = "Pacific",
                   "WASHINGTON" = "Pacific")
+
+state_tibble <- state_tibble |>
+  mutate(division = if_else(area_name %in% names(division_map),
+                            division_map[area_name],
+                            "ERROR"))
 ```
 
 ## Function 1: Read and Convert Data
