@@ -60,20 +60,43 @@ state_tibble <- state_tibble |>
     area_name %in% c("CONNECTICUT", "MAINE", "MASSACHUSETTS", "NEW HAMPSHIRE", 
                      "RHODE ISLAND", "VERMONT") ~ "New England",
     area_name %in% c("NEW JERSEY", "NEW YORK", "PENNSYLVANIA") ~ "Mid-Atlantic",
-    area_name %in% c("ILLINOIS", "INDIANA", "MICHIGAN", "OHIO", "WISCONSIN") ~ "East North Central",
+    area_name %in% c("ILLINOIS", "INDIANA", "MICHIGAN", "OHIO", 
+                     "WISCONSIN") ~ "East North Central",
     area_name %in% c("IOWA", "KANSAS", "MINNESOTA", "MISSOURI", "NEBRASKA", 
                      "NORTH DAKOTA", "SOUTH DAKOTA") ~ "West North Central",
-    area_name %in% c("DELAWARE", "DISTRICT OF COLUMBIA", "FLORIDA", "GEORGIA", "MARYLAND", 
-                     "NORTH CAROLINA", "SOUTH CAROLINA", "VIRGINIA", "WEST VIRGINIA") ~ "South Atlantic",
-    area_name %in% c("ALABAMA", "KENTUCKY", "MISSISSIPPI", "TENNESSEE") ~ "East South Central",
-    area_name %in% c("ARKANSAS", "LOUISIANA", "OKLAHOMA", "TEXAS") ~ "West South Central",
+    area_name %in% c("DELAWARE", "DISTRICT OF COLUMBIA", "FLORIDA", "GEORGIA", 
+                     "MARYLAND", "NORTH CAROLINA", "SOUTH CAROLINA", "VIRGINIA", 
+                     "WEST VIRGINIA") ~ "South Atlantic",
+    area_name %in% c("ALABAMA", "KENTUCKY", "MISSISSIPPI", 
+                     "TENNESSEE") ~ "East South Central",
+    area_name %in% c("ARKANSAS", "LOUISIANA", "OKLAHOMA", 
+                     "TEXAS") ~ "West South Central",
     area_name %in% c("ARIZONA", "COLORADO", "IDAHO", "MONTANA", "NEVADA", 
                      "NEW MEXICO", "UTAH", "WYOMING") ~ "Mountain",
-    area_name %in% c("ALASKA", "CALIFORNIA", "HAWAII", "OREGON", "WASHINGTON") ~ "Pacific",
+    area_name %in% c("ALASKA", "CALIFORNIA", "HAWAII", "OREGON", 
+                     "WASHINGTON") ~ "Pacific",
     TRUE ~ "ERROR"))
 ```
 
 ## Function 1: Read and Convert Data
+```{r}
+read_and_preprocess <- function(column_name = "enrollment") {
+  # Step 1
+  ## read csv file and select / rename columns
+  EDU01a <- read_csv("data/EDU01a.csv") |>
+    select(Area_name, STCOU, ends_with("D")) |>
+    rename("area_name" = "Area_name")
+  ## print out the first 5 rows
+  head(EDU01a, 5)
+  
+  # Step 2
+  # pivot cols 3-12 into long format
+  long <- EDU01a |>
+    pivot_longer(cols = 3:12, names_to = "survey_value", values_to = column_name)
+  ## print out the first 5 rows
+  head(long, 5)
+}
+```
 
 ## Function 2: Parsing the Data and Creating New Varaiables
 
