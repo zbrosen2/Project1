@@ -81,6 +81,7 @@ state_tibble <- state_tibble |>
 ```
 
 ## Function 1: Read and Convert Data
+
 ```{r}
 read_and_preprocess <- function(data, column_name = "enrollment") {
   # Step 1
@@ -116,12 +117,24 @@ parase_new_variables <- function(long_tibble) {
 
 ## Function 3: County Level
 
+```{r}
+## add state column
+add_state_col_county <- function(county_tibble) {
+  county_tibble <- county_tibble |>
+  mutate(state = substr(area_name, nchar(area_name) - 1, nchar(area_name)))
+  ## return the tibble
+  return(county_tibble)
+}
+```
+
+
 ## Function 4: Non-County Level
+
 ```{r}
 add_division_col_state <- function(state_tibble) {
   # Step 6
   ## create division variable and set division by state name, else ERROR
-  final_state_tibble <- state_tibble |>
+  state_tibble <- state_tibble |>
     mutate(division = case_when(
       area_name %in% c("CONNECTICUT", "MAINE", "MASSACHUSETTS", "NEW HAMPSHIRE", 
                        "RHODE ISLAND", "VERMONT") ~ "New England",
@@ -142,7 +155,7 @@ add_division_col_state <- function(state_tibble) {
       area_name %in% c("ALASKA", "CALIFORNIA", "HAWAII", "OREGON", 
                        "WASHINGTON") ~ "Pacific",
       TRUE ~ "ERROR"))
-  return(final_state_tibble)
+  return(state_tibble)
 }
 ```
 
@@ -162,7 +175,7 @@ create_datasets <- function(long_updated) {
   head(state_tibble, 10)
   head(county_tibble, 10)
   
-  final_county_tibble <- function3(county_tibble) # temp (rename to actual function 3 name)
+  final_county_tibble <- add_state_col_county(county_tibble)
   final_state_tibble <- add_division_col_state(state_tibble)
   return(list(county = final_county_tibble, state = final_state_tibble))
 }
