@@ -1,11 +1,10 @@
 ---
 title: "ST 558: Project 1"
+author: Kayla Kippes and Zack Rosen
+date: 6/16/2025
 format: pdf
 editor: visual
 ---
-# Authors: Zack Rosen and Kayla Kippes
-# Date: 6/16/2025
-# Purpose: Compile Project 1 materials into a nice report
 
 ## Individual Steps
 ```{r}
@@ -102,6 +101,18 @@ read_and_preprocess <- function(data, column_name = "enrollment") {
 ```
 
 ## Function 2: Parsing the Data and Creating New Varaiables
+
+```{r}
+parase_new_variables <- function(long_tibble) {
+  long_updated <- long_tibble |> 
+  mutate(short_year = as.numeric(substr(survey_value, 8, 9)), 
+         year = ifelse(short_year > 25, 1900 + short_year, 2000 + short_year),
+         measurement = substr(survey_value, 1, 7)) |>
+  select(-short_year)
+  ## print out the first 5 rows
+  head(long_updated, 5)
+}
+```
 
 ## Function 3: County Level
 
