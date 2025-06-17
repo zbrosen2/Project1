@@ -6,86 +6,12 @@ format: pdf
 editor: visual
 ---
 
-## Individual Steps
-```{r}
-#| message: false
-#| warning: false
-library(tidyverse)
-
-# Step 1
-## read csv file and select / rename columns
-EDU01a <- read_csv("data/EDU01a.csv") |>
-  select(Area_name, STCOU, ends_with("D")) |>
-  rename("area_name" = "Area_name")
-## print out the first 5 rows
-head(EDU01a, 5)
-
-# Step 2
-# pivot cols 3-12 into long format
-long <- EDU01a |>
-  pivot_longer(cols = 3:12, names_to = "survey_value", values_to = "enrollment")
-## print out the first 5 rows
-head(long, 5)
-
-# Step 3
-## add year and measurement variables
-long_updated <- long |> 
-  mutate(short_year = as.numeric(substr(survey_value, 8, 9)), 
-         year = ifelse(short_year > 25, 1900 + short_year, 2000 + short_year),
-         measurement = substr(survey_value, 1, 7)) |>
-  select(-short_year)
-## print out the first 5 rows
-head(long_updated, 5)
-
-# Step 4
-## get the county indices
-county_indices <- grep(pattern = ", \\w\\w", long_updated$area_name)
-## create the non-county data
-state_tibble <- long_updated[-county_indices,]
-## create the county data
-county_tibble <- long_updated[county_indices,]
-## add a class to the county tibble
-class(county_tibble) <- c("county", class(county_tibble))
-## print out the first 10 rows
-head(state_tibble, 10)
-head(county_tibble, 10)
-
-# Step 5
-## add state column
-county_tibble<- county_tibble |>
-  mutate(state = substr(area_name, nchar(area_name) - 1, nchar(area_name)))
-
-# Step 6
-## create division variable and set division by state name, else ERROR
-state_tibble <- state_tibble |>
-  mutate(division = case_when(
-    area_name %in% c("CONNECTICUT", "MAINE", "MASSACHUSETTS", "NEW HAMPSHIRE", 
-                     "RHODE ISLAND", "VERMONT") ~ "New England",
-    area_name %in% c("NEW JERSEY", "NEW YORK", "PENNSYLVANIA") ~ "Mid-Atlantic",
-    area_name %in% c("ILLINOIS", "INDIANA", "MICHIGAN", "OHIO", 
-                     "WISCONSIN") ~ "East North Central",
-    area_name %in% c("IOWA", "KANSAS", "MINNESOTA", "MISSOURI", "NEBRASKA", 
-                     "NORTH DAKOTA", "SOUTH DAKOTA") ~ "West North Central",
-    area_name %in% c("DELAWARE", "DISTRICT OF COLUMBIA", "FLORIDA", "GEORGIA", 
-                     "MARYLAND", "NORTH CAROLINA", "SOUTH CAROLINA", "VIRGINIA", 
-                     "WEST VIRGINIA") ~ "South Atlantic",
-    area_name %in% c("ALABAMA", "KENTUCKY", "MISSISSIPPI", 
-                     "TENNESSEE") ~ "East South Central",
-    area_name %in% c("ARKANSAS", "LOUISIANA", "OKLAHOMA", 
-                     "TEXAS") ~ "West South Central",
-    area_name %in% c("ARIZONA", "COLORADO", "IDAHO", "MONTANA", "NEVADA", 
-                     "NEW MEXICO", "UTAH", "WYOMING") ~ "Mountain",
-    area_name %in% c("ALASKA", "CALIFORNIA", "HAWAII", "OREGON", 
-                     "WASHINGTON") ~ "Pacific",
-    TRUE ~ "ERROR"))
-```
-
 ## Function 1: Read and Convert Data
 
 ```{r}
 read_and_preprocess <- function(data, column_name = "enrollment") {
   # Step 1
-  ## read csv file and select / rename columns
+  ## select / rename columns
   EDU01a <- data |>
     select(Area_name, STCOU, ends_with("D")) |>
     rename("area_name" = "Area_name")
@@ -94,10 +20,13 @@ read_and_preprocess <- function(data, column_name = "enrollment") {
   
   # Step 2
   # pivot cols 3-12 into long format
-  long <- EDU01a |>
+  long_tibble <- EDU01a |>
     pivot_longer(cols = 3:12, names_to = "survey_value", values_to = column_name)
   ## print out the first 5 rows
-  head(long, 5)
+  head(long_tibble, 5)
+  
+  ##return long data
+  return(long_tibble)
 }
 ```
 
@@ -112,6 +41,9 @@ parase_new_variables <- function(long_tibble) {
   select(-short_year)
   ## print out the first 5 rows
   head(long_updated, 5)
+  
+  ## returns long updated
+  return(long_updated)
 }
 ```
 
@@ -160,6 +92,7 @@ add_division_col_state <- function(state_tibble) {
 ```
 
 ## Function 5: Returning Two Final Tibbles
+
 ```{r}
 create_datasets <- function(long_updated) {
   # Step 4
@@ -182,6 +115,18 @@ create_datasets <- function(long_updated) {
 ```
 
 ## Wrapper Function
+
+```{r}
+my_wrapper <- function(url, default_var_name = "enrollment"){
+  result <- read_csv(url) |>
+    read_and_preprocess() |>
+    parase_new_variables() |>
+    create_datasets()
+ ## return final result
+  return(result)
+ }
+```
+
 
 ## Combine Function
 
