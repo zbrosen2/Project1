@@ -9,8 +9,8 @@ editor: visual
 ## Function 1: Read and Convert Data
 
 ```{r}
-message: false
-warning: false
+#| warning: false
+#| message: false
 
 library(tidyverse)
 
@@ -146,6 +146,9 @@ combine_results <- function(result1, result2) {
 ### State
 
 ```{r}
+library(dplyr)
+library(ggplot2)
+
 plot.state <- function(df, var_name = "enrollment") {
   df |>
     filter(division != "ERROR") |>
@@ -161,9 +164,6 @@ plot.state <- function(df, var_name = "enrollment") {
 
 ### County
 ```{r}
-library(dplyr)
-library(ggplot2)
-
 plot.county <- function(county_tibble, var_name = "enrollment", state = "NC", direction = "top", n = 5) {
   ## filter for the selected state
   filtered_state <- county_tibble |>
@@ -185,24 +185,44 @@ plot.county <- function(county_tibble, var_name = "enrollment", state = "NC", di
     filter(area_name %in% sorted_data$area_name)
   
   ## plot the statistic
-  ggplot(new_sorted_data, aes(x = area_name, y = get(var_name))) + geom_boxplot() + 
+  ggplot(new_sorted_data, aes(x = area_name, y = get(var_name))) + 
+    geom_boxplot() + 
     labs(title = paste(direction, n, "Counties in", state),
          y = var_name,
-         x = "County")
+         x = "County") +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
 }
 ```
 
 
 ## Putting it All Together
 
-### Data Processing Function
+### Two Enrollment Datasets
 
-### Data Combining Function
+```{r}
+#| warning: false
+#| message: false
 
-### Plot Function on State
+## using data processing on two enrollment urls
+result1 <- my_wrapper("data/EDU01a.csv")
+result2 <- my_wrapper("data/EDU01b.csv")
 
-### Plot Function on County
+## combining data sets
+combined_results <- combine_results(result1, result2)
 
-### Repeating the Process For Additional Data Sets
+## use plot function on state
+plot.state(combined_results$combined_state)
 
-### Plot Function
+## use plot on county data
+## scenario one
+plot.county(combined_results$combined_county, state = "NC", direction="top", n = 20)
+## scenario two
+plot.county(combined_results$combined_county, state = "SC", direction="bottom", n = 7)
+## scenario three
+plot.county(combined_results$combined_county)
+##scenario four
+plot.county(combined_results$combined_county, state = "PA", direction="top", n = 8)
+
+```
+
+### Four Additional Data Sets
