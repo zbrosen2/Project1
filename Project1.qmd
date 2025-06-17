@@ -25,14 +25,16 @@ read_and_preprocess <- function(data, column_name = "enrollment") {
     select(Area_name, STCOU, ends_with("D")) |>
     rename("area_name" = "Area_name")
   ## print out the first 5 rows
-  head(EDU01a, 5)
+  print("Preprocessed:")
+  print(head(EDU01a, 5))
   
   # Step 2
   # pivot cols 3-12 into long format
   long_tibble <- EDU01a |>
     pivot_longer(cols = 3:12, names_to = "survey_value", values_to = column_name)
   ## print out the first 5 rows
-  head(long_tibble, 5)
+  print("Long format:")
+  print(head(long_tibble, 5))
   
   ##return long data
   return(long_tibble)
@@ -41,17 +43,20 @@ read_and_preprocess <- function(data, column_name = "enrollment") {
 
 ## Function 2: Parsing the Data and Creating New Varaiables
 
-In order to parase the data and create new variables, We figured "mutate" would have to be used. Since each year was embedded into the "survery_value" column and every value in that column was the same length, we were able to sub string the year out and make it a numeric. However, this only gave me two digits and we wanted four digit years. To solve for this, we added an "if" statement to add either 1900 or 2000 to my two digit year (this wouldn't have worked if the data includes years below 1925). Also, we had made a temporary column initially with the short year so we decided to select all other columns except for the one that wasn't needed.
+In order to parse the data and create new variables, We figured "mutate" would have to be used. Since each year was embedded into the "survery_value" column and every value in that column was the same length, we were able to sub string the year out and make it a numeric. However, this only gave me two digits and we wanted four digit years. To solve for this, we added an "if" statement to add either 1900 or 2000 to my two digit year (this wouldn't have worked if the data includes years below 1925). Also, we had made a temporary column initially with the short year so we decided to select all other columns except for the one that wasn't needed.
 
 ```{r}
-parase_new_variables <- function(long_tibble) {
+#| message: false
+
+parse_new_variables <- function(long_tibble) {
   long_updated <- long_tibble |> 
   mutate(short_year = as.numeric(substr(survey_value, 8, 9)), 
          year = ifelse(short_year > 25, 1900 + short_year, 2000 + short_year),
          measurement = substr(survey_value, 1, 7)) |>
   select(-short_year)
   ## print out the first 5 rows
-  head(long_updated, 5)
+  print("Updated:")
+  print(head(long_updated, 5))
   
   ## returns long updated
   return(long_updated)
@@ -60,9 +65,11 @@ parase_new_variables <- function(long_tibble) {
 
 ## Function 3: County Level
 
-Similar to the year scenario above, we had to use "substr" to create a state column for the county data. This was a bit tricker as the values in area_name were not all the same length. To solve for this, we need to grab the max number of characters in the string and pull the second to last and last one so we could get the two character state value.
+Similar to the year scenario above, we had to use "substr" to create a state column for the county data. This was a bit trickier as the values in area_name were not all the same length. To solve for this, we need to grab the max number of characters in the string and pull the second to last and last one so we could get the two character state value.
 
 ```{r}
+#| message: false
+
 ## add state column
 add_state_col_county <- function(county_tibble) {
   county_tibble <- county_tibble |>
@@ -78,6 +85,8 @@ add_state_col_county <- function(county_tibble) {
 Similar to the above functions, we figured that "mutate" would be the best way to add a new division column. This new column's values were determined by a case_when statement that checked if the area_name of that observation was in a vector corresponding to one of the Census Bureau's designated divisions. After all of these divisions were checked, we added the value "ERROR" to the division column if none of the divisions were a match.
 
 ```{r}
+#| message: false
+
 add_division_col_state <- function(state_tibble) {
   # Step 6
   ## create division variable and set division by state name, else ERROR
@@ -111,6 +120,8 @@ add_division_col_state <- function(state_tibble) {
 This function filters the long format data into two tibbles: a county-level tibble and a state-level tibble.  The county-level tibble corresponds to county entries, with area_name values identified by a comma and a two letter state abbreviation.  The state-level tibble was simply all of the other entries that were not in the county-level tibble. Lastly, a county class was added to the county-level tibble and a state class was added to the state-level tibble.
 
 ```{r}
+#| message: false
+
 create_datasets <- function(long_updated) {
   # Step 4
   ## get the county indices
@@ -124,8 +135,10 @@ create_datasets <- function(long_updated) {
   ## add a class to the state tibble
   class(state_tibble) <- c("state", class(state_tibble))
   ## print out the first 10 rows
-  head(state_tibble, 10)
-  head(county_tibble, 10)
+  print("State tibble:")
+  print(head(state_tibble, 10))
+  print("County tibble:")
+  print(head(county_tibble, 10))
   
   final_county_tibble <- add_state_col_county(county_tibble)
   final_state_tibble <- add_division_col_state(state_tibble)
@@ -138,10 +151,12 @@ create_datasets <- function(long_updated) {
 The outline for this one was very helpful as it pointed me to the format. Besides the initial csv read, we don't define any variables for my other functions because we assume the output of the previous function will be used as input for the next function. This makes it easier as their are less things to input.
 
 ```{r}
+#| message: false
+
 my_wrapper <- function(url, default_var_name = "enrollment"){
   result <- read_csv(url) |>
     read_and_preprocess() |>
-    parase_new_variables() |>
+    parse_new_variables() |>
     create_datasets()
  ## return final result
   return(result)
@@ -153,9 +168,11 @@ my_wrapper <- function(url, default_var_name = "enrollment"){
 Here we are doing a simple combination of all the specific county and state data.
 
 ```{r}
+#| message: false
+
 combine_results <- function(result1, result2) {
-  list(combined_county = dplyr::bind_rows(result1$county, result2$county),
-       combined_state = dplyr::bind_rows(result1$state, result2$state))
+  list(county = dplyr::bind_rows(result1$county, result2$county),
+       state = dplyr::bind_rows(result1$state, result2$state))
 }
 ```
 
@@ -168,8 +185,7 @@ We created our own classes by writing custom plot functions, unique to our data.
 For plot state function, we had to filter out all observations that had a division value of "ERROR". We then had to figure out how to group by division across the year variable. This is easily done with a group_by statement that takes in division as the first argument and then year as the second. We then summarized by using the mean of the grouped var_name variable and, we decided that a line plot with many colored lines would be the best way to visualize this. Each line's color corresponds to a division.
 
 ```{r}
-library(dplyr)
-library(ggplot2)
+#| message: false
 
 plot.state <- function(df, var_name = "enrollment") {
   df |>
@@ -192,7 +208,10 @@ plot.state <- function(df, var_name = "enrollment") {
 To start this plot county function, a certain state had to be filtered. This helped narrow down the data set. From there we had to group by area name in order to get our mean statistics. The difficult part about arranging these statistics was that it was dependent on an inputted value so we had to imply if else logic. After that we only choose the n number of specified rows. That was now considered our sorted data but we didn't want to only use that data for the plot. Instead we had to go back to our original filtered data and filter it again to only include the area names in the top or bottom n records. To view this neatly, we decided a box plot would be the best visualization.
 
 ```{r}
-plot.county <- function(county_tibble, var_name = "enrollment", state = "NC", direction = "top", n = 5) {
+#| message: false
+
+plot.county <- function(county_tibble, var_name = "enrollment", state = "NC", 
+                        direction = "top", n = 5) {
   ## filter for the selected state
   filtered_state <- county_tibble |>
     filter(state == state)
@@ -232,10 +251,9 @@ Here we put it all together using two data sets and then using a different four 
 The goal here was to process two different data sets and save the results to their own respective variables. After that, we combined those results so we are left with a list that contains a combined state data frame and a combined tibble data frame. From there we used our state plot function to give us mean enrollment by division over time. Then we use the county plot function to retrieve a certain number of box plots of the enrollment data for the top or bottom area names in a specified state.
 
 ```{r}
-#| warning: false
 #| message: false
 
-## using data processing on two enrollment urls
+## using data processing on two enrollment datasets
 result1 <- my_wrapper("data/EDU01a.csv")
 result2 <- my_wrapper("data/EDU01b.csv")
 
@@ -243,20 +261,48 @@ result2 <- my_wrapper("data/EDU01b.csv")
 combined_results <- combine_results(result1, result2)
 
 ## use plot function on state
-plot(combined_results$combined_state)
+plot(combined_results$state)
 
 ## use plot on county data
 ## scenario one
-plot(combined_results$combined_county, state = "NC", direction="top", n = 20)
+plot(combined_results$county, state = "NC", direction="top", n = 20)
 ## scenario two
-plot(combined_results$combined_county, state = "SC", direction="bottom", n = 7)
+plot(combined_results$county, state = "SC", direction="bottom", n = 7)
 ## scenario three
-plot(combined_results$combined_county)
+plot(combined_results$county)
 ##scenario four
-plot(combined_results$combined_county, state = "PA", direction="top", n = 8)
+plot(combined_results$county, state = "PA", direction="top", n = 8)
 
 ```
 
 ### Four Additional Data Sets
 
-** Zack insert here **
+The goal here was to process four additional data sets and save those into four respective variables. Then, two at a time, the results were combined into two new results called a_prime and b_prime. Lastly a_prime and b_prime were combined into one final result variable which contained all four additional data sets. Then we used the state plot function and the county plot function. The county plot function was called four times with four different combinations of arguments.
+
+```{r}
+#| message: false
+
+## using data processing on four additional datasets
+a <- my_wrapper("data/PST01a.csv")
+b <- my_wrapper("data/PST01b.csv")
+c <- my_wrapper("data/PST01c.csv")
+d <- my_wrapper("data/PST01d.csv")
+
+## combine four datasets into one
+a_prime <- combine_results(a, b)
+b_prime <- combine_results(c, d)
+four_combined_results <-combine_results(a_prime, b_prime)
+
+## use plot function on state
+plot(four_combined_results$state)
+
+## use plot on county data
+## scenario one
+plot(four_combined_results$county, state = "CA", direction="top", n = 15)
+## scenario two
+plot(four_combined_results$county, state = "TX", direction="top", n = 4)
+## scenario three
+plot(four_combined_results$county)
+##scenario four
+plot(four_combined_results$county, state = "NY", direction="top", n = 10)
+```
