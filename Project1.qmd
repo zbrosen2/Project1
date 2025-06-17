@@ -281,7 +281,7 @@ plot(combined_results$county, state = "PA", direction="top", n = 8)
 
 ### Four Additional Data Sets
 
-The goal here was to process four additional data sets and save those into four respective variables. Then, two at a time, the results were combined into two new results called a_prime and b_prime. Lastly a_prime and b_prime were combined into one final result variable which contained all four additional data sets. Then we used the state plot function and the county plot function. The county plot function was called four times with four different combinations of arguments.
+The goal here was to process four additional data sets and save those into four respective variables. Then, two at a time, the results were combined into two new results called a_prime and b_prime. Lastly a_prime and b_prime were combined into one final result variable which contained all four additional data sets. Then we used the state plot function and the county plot function. The county plot function was then called four times with four different combinations of arguments.
 
 ```{r}
 #| message: false
