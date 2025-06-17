@@ -10,7 +10,7 @@ For this project, our goal was to manipulate and process data sets that came in 
 
 ## Function 1: Read and Convert Data
 
-** Zack insert here **
+We first started by preprocessing the read data.  This involved selecting useful columns, namely, Area_name, STCOU and those that end with "D". The tidyverse package was extremely useful for data preprocessing techniques and manipulations such as these.  We then renamed the column for consistency, and converted the data from a wide to a long format.  To do this, we transformed the columns ending in "D" into a single column named "survey_value" and mapped the corresponding original value to these observations by adding a new column.  This new column was named by the column_name variable which was included in the function signature as an optional parameter with the default value of "enrollment".
 
 ```{r}
 #| warning: false
@@ -75,7 +75,7 @@ add_state_col_county <- function(county_tibble) {
 
 ## Function 4: Non-County Level
 
-** Zack insert here **
+Similar to the above functions, we figured that "mutate" would be the best way to add a new division column. This new column's values were determined by a case_when statement that checked if the area_name of that observation was in a vector corresponding to one of the Census Bureau's designated divisions. After all of these divisions were checked, we added the value "ERROR" to the division column if none of the divisions were a match.
 
 ```{r}
 add_division_col_state <- function(state_tibble) {
@@ -108,7 +108,7 @@ add_division_col_state <- function(state_tibble) {
 
 ## Function 5: Returning Two Final Tibbles
 
-** Zack insert here **
+This function filters the long format data into two tibbles: a county-level tibble and a state-level tibble.  The county-level tibble corresponds to county entries, with area_name values identified by a comma and a two letter state abbreviation.  The state-level tibble was simply all of the other entries that were not in the county-level tibble. Lastly, a county class was added to the county-level tibble and a state class was added to the state-level tibble.
 
 ```{r}
 create_datasets <- function(long_updated) {
@@ -121,6 +121,8 @@ create_datasets <- function(long_updated) {
   county_tibble <- long_updated[county_indices,]
   ## add a class to the county tibble
   class(county_tibble) <- c("county", class(county_tibble))
+  ## add a class to the state tibble
+  class(state_tibble) <- c("state", class(state_tibble))
   ## print out the first 10 rows
   head(state_tibble, 10)
   head(county_tibble, 10)
@@ -163,7 +165,7 @@ We created our own classes by writing custom plot functions, unique to our data.
 
 ### State
 
-** Zack insert here **
+For plot state function, we had to filter out all observations that had a division value of "ERROR". We then had to figure out how to group by division across the year variable. This is easily done with a group_by statement that takes in division as the first argument and then year as the second. We then summarized by using the mean of the grouped var_name variable and, we decided that a line plot with many colored lines would be the best way to visualize this. Each line's color corresponds to a division.
 
 ```{r}
 library(dplyr)
@@ -171,10 +173,13 @@ library(ggplot2)
 
 plot.state <- function(df, var_name = "enrollment") {
   df |>
+    ## filter out ERROR entries and group by division across years
     filter(division != "ERROR") |>
     group_by(division, year) |>
-    summarize(mean = mean(get(var_name)), .groups = "drop") |>
-    ggplot(aes(x = year, y = mean, color = division)) +
+    ## then find the mean of var_name (default is enrollment)
+    summarize(mean_val = mean(get(var_name), na.rm = TRUE)) |>
+    ## plot the statistic
+    ggplot(aes(x = year, y = mean_val, color = division)) +
     geom_line() +
     labs(title = paste("Mean", var_name, "across years by division"),
          y = paste("Mean", var_name),
@@ -238,17 +243,17 @@ result2 <- my_wrapper("data/EDU01b.csv")
 combined_results <- combine_results(result1, result2)
 
 ## use plot function on state
-plot.state(combined_results$combined_state)
+plot(combined_results$combined_state)
 
 ## use plot on county data
 ## scenario one
-plot.county(combined_results$combined_county, state = "NC", direction="top", n = 20)
+plot(combined_results$combined_county, state = "NC", direction="top", n = 20)
 ## scenario two
-plot.county(combined_results$combined_county, state = "SC", direction="bottom", n = 7)
+plot(combined_results$combined_county, state = "SC", direction="bottom", n = 7)
 ## scenario three
-plot.county(combined_results$combined_county)
+plot(combined_results$combined_county)
 ##scenario four
-plot.county(combined_results$combined_county, state = "PA", direction="top", n = 8)
+plot(combined_results$combined_county, state = "PA", direction="top", n = 8)
 
 ```
 
