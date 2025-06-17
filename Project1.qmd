@@ -186,6 +186,19 @@ plot.county(combined$combined_county)
 ### Data Combining Function
 
 ### Plot Function on State
+```{r}
+plot.state <- function(df, var_name = "enrollment") {
+  df |>
+    filter(division != "ERROR") |>
+    group_by(division, year) |>
+    summarize(mean = mean(get(var_name)), .groups = "drop") |>
+    ggplot(aes(x = year, y = mean, color = division)) +
+    geom_line() +
+    labs(title = paste("Mean", var_name, "across years by division"),
+         y = paste("Mean", var_name),
+         x = "Year")
+}
+```
 
 ### Plot Function on County
 
