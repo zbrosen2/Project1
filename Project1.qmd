@@ -10,7 +10,7 @@ For this project, our goal was to manipulate and process data sets that came in 
 
 ## Function 1: Read and Convert Data
 
-We first started by preprocessing the read data.  This involved selecting useful columns, namely, Area_name, STCOU and those that end with "D". The tidyverse package was extremely useful for data preprocessing techniques and manipulations such as these.  We then renamed the column for consistency, and converted the data from a wide to a long format. To do this, we transformed the columns ending in "D" into a single column named "survey_value" and mapped the corresponding original value to these observations by adding a new column.  This new column was named by the column_name variable which was included in the function signature as an optional parameter with the default value of "enrollment".
+We first started by preprocessing the read data.  This involved selecting useful columns, namely, Area_name, STCOU and those that end with "D". The tidyverse package was extremely useful for data preprocessing techniques and manipulations such as these.  We then renamed the column for consistency, and converted the data from a wide to a long format. To do this, we transformed the columns ending in "D" into a single column named "survey_value" and mapped the corresponding original value to these observations by adding a new column.  This new column was named by the column_name variable, which was included in the function signature as an optional parameter with the default value of "enrollment".
 
 ```{r}
 #| warning: false
