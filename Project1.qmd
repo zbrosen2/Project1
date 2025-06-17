@@ -9,6 +9,11 @@ editor: visual
 ## Function 1: Read and Convert Data
 
 ```{r}
+message: false
+warning: false
+
+library(tidyverse)
+
 read_and_preprocess <- function(data, column_name = "enrollment") {
   # Step 1
   ## select / rename columns
@@ -137,6 +142,42 @@ combine_results <- function(result1, result2) {
 ```
 
 ## Custom Plot Function
+
+### County
+```{r}
+library(dplyr)
+library(ggplot2)
+
+plot.county <- function(county_tibble, var_name = "enrollment", state = "NC", direction = "top", n = 5) {
+  ## filter for the selected state
+  filtered_state <- county_tibble |>
+    filter(state == state)
+  
+  ## find the mean by area_name and sort the data
+  sorted_data <- filtered_state |>
+    group_by(area_name) |>
+    summarize(mean_val = mean(get(var_name), na.rm = TRUE)) |>
+    arrange(if (direction == "top") {
+      desc(mean_val)
+    } else {
+      mean_val
+    }) |>
+    slice_head(n = n)
+  
+  ## filter for state from above
+  new_sorted_data <- filtered_state |>
+    filter(area_name %in% sorted_data$area_name)
+  
+  ## plot the statistic
+  ggplot(new_sorted_data, aes(x = area_name, y = get(var_name))) + geom_boxplot() + 
+    labs(title = paste(direction, n, "Counties in", state),
+         y = var_name,
+         x = "County")
+}
+
+plot.county(combined$combined_county)
+```
+
 
 ## Putting it All Together
 
