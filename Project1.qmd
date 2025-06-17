@@ -6,11 +6,11 @@ format: pdf
 editor: visual
 ---
 
-For this project, our goal was to manipulate and process data sets that came in a certain form. To start this process, we completed each individual step on one data set. This allowed us to ensure the content of our functions would be working properly. Then we added each of those steps into their respective functions. After that we created a wrapper function to pull everything into one place. From there we combined the necessary data sets and performed unique types of the plot function. The rest of this document will talk through each function and give examples of all of our functions coming together to be used on actual data.
+For this project, our goal was to manipulate and process data sets that came in a certain form. To start this process, we completed each individual step on one data set. This allowed us to ensure the content of our functions would be working properly. Then we added each of those steps into their respective functions. After that, we created a wrapper function to pull everything into one place. From there we combined the necessary data sets and performed unique types of the plot function. The rest of this document will talk through each function and give examples of all of our functions coming together to be used on actual data.
 
 ## Function 1: Read and Convert Data
 
-We first started by preprocessing the read data.  This involved selecting useful columns, namely, Area_name, STCOU and those that end with "D". The tidyverse package was extremely useful for data preprocessing techniques and manipulations such as these.  We then renamed the column for consistency, and converted the data from a wide to a long format.  To do this, we transformed the columns ending in "D" into a single column named "survey_value" and mapped the corresponding original value to these observations by adding a new column.  This new column was named by the column_name variable which was included in the function signature as an optional parameter with the default value of "enrollment".
+We first started by preprocessing the read data.  This involved selecting useful columns, namely, Area_name, STCOU and those that end with "D". The tidyverse package was extremely useful for data preprocessing techniques and manipulations such as these.  We then renamed the column for consistency, and converted the data from a wide to a long format. To do this, we transformed the columns ending in "D" into a single column named "survey_value" and mapped the corresponding original value to these observations by adding a new column.  This new column was named by the column_name variable which was included in the function signature as an optional parameter with the default value of "enrollment".
 
 ```{r}
 #| warning: false
@@ -43,7 +43,7 @@ read_and_preprocess <- function(data, column_name = "enrollment") {
 
 ## Function 2: Parsing the Data and Creating New Varaiables
 
-In order to parse the data and create new variables, We figured "mutate" would have to be used. Since each year was embedded into the "survery_value" column and every value in that column was the same length, we were able to sub string the year out and make it a numeric. However, this only gave me two digits and we wanted four digit years. To solve for this, we added an "if" statement to add either 1900 or 2000 to my two digit year (this wouldn't have worked if the data includes years below 1925). Also, we had made a temporary column initially with the short year so we decided to select all other columns except for the one that wasn't needed.
+In order to parse the data and create new variables, We figured "mutate" would have to be used. Since each year was embedded into the "survery_value" column and every value in that column was the same length, we were able to sub string the year out and make it a numeric. However, this only gave us two digits and we wanted four digit years. To solve for this, we added an "if" statement to add either 1900 or 2000 to the two digit year (this wouldn't have worked if the data includes years below 1925). Also, we had made a temporary column initially with the short year so we decided to select all other columns except for the one that wasn't needed.
 
 ```{r}
 #| message: false
@@ -92,15 +92,19 @@ add_division_col_state <- function(state_tibble) {
   ## create division variable and set division by state name, else ERROR
   state_tibble <- state_tibble |>
     mutate(division = case_when(
-      area_name %in% c("CONNECTICUT", "MAINE", "MASSACHUSETTS", "NEW HAMPSHIRE", 
+      area_name %in% c("CONNECTICUT", "MAINE", 
+                       "MASSACHUSETTS", "NEW HAMPSHIRE", 
                        "RHODE ISLAND", "VERMONT") ~ "New England",
-      area_name %in% c("NEW JERSEY", "NEW YORK", "PENNSYLVANIA") ~ "Mid-Atlantic",
+      area_name %in% c("NEW JERSEY", "NEW YORK", 
+                       "PENNSYLVANIA") ~ "Mid-Atlantic",
       area_name %in% c("ILLINOIS", "INDIANA", "MICHIGAN", "OHIO", 
                        "WISCONSIN") ~ "East North Central",
-      area_name %in% c("IOWA", "KANSAS", "MINNESOTA", "MISSOURI", "NEBRASKA", 
-                       "NORTH DAKOTA", "SOUTH DAKOTA") ~ "West North Central",
-      area_name %in% c("DELAWARE", "DISTRICT OF COLUMBIA", "FLORIDA", "GEORGIA", 
-                       "MARYLAND", "NORTH CAROLINA", "SOUTH CAROLINA", "VIRGINIA", 
+      area_name %in% c("IOWA", "KANSAS", "MINNESOTA", "MISSOURI", 
+                       "NEBRASKA", "NORTH DAKOTA", 
+                       "SOUTH DAKOTA") ~ "West North Central",
+      area_name %in% c("DELAWARE", "DISTRICT OF COLUMBIA", "FLORIDA", 
+                       "GEORGIA", "MARYLAND", "NORTH CAROLINA", 
+                       "SOUTH CAROLINA", "VIRGINIA", 
                        "WEST VIRGINIA") ~ "South Atlantic",
       area_name %in% c("ALABAMA", "KENTUCKY", "MISSISSIPPI", 
                        "TENNESSEE") ~ "East South Central",
@@ -148,7 +152,7 @@ create_datasets <- function(long_updated) {
 
 ## Wrapper Function
 
-The outline for this one was very helpful as it pointed me to the format. Besides the initial csv read, we don't define any variables for my other functions because we assume the output of the previous function will be used as input for the next function. This makes it easier as their are less things to input.
+The outline for this one was very helpful as it pointed us to the format. Besides the initial csv read, we don't define any variables for the other functions because we assume the output of the previous function will be used as input for the next function. This makes it easier as there are less things to input.
 
 ```{r}
 #| message: false
