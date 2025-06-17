@@ -127,8 +127,14 @@ my_wrapper <- function(url, default_var_name = "enrollment"){
  }
 ```
 
-
 ## Combine Function
+
+```{r}
+combine_results <- function(result1, result2) {
+  list(combined_county = dplyr::bind_rows(result1$county, result2$county),
+       combined_state = dplyr::bind_rows(result1$state, result2$state))
+}
+```
 
 ## Custom Plot Function
 
